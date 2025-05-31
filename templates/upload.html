@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Step 1: Upload Image</h2>
+    <form id="uploadForm" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data" style="margin-bottom: 18px;">
+        <input type="file" id="fileInput" name="image" accept="image/*" required>
+        <button type="submit">Upload</button>
+    </form>
+    {% if message %}
+        <div class="alert">{{ message }}</div>
+    {% endif %}
+{% endblock %}
+<script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function() {
+            const imagePreview = document.getElementById('imagePreview');
+            imagePreview.innerHTML = `<img src="${reader.result}" alt="Image Preview" style="max-width: 100%; height: auto;">`;
+        }
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    }
+</script>

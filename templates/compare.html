@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>  Comparison Page</h2>
+    <div style="display: flex; gap: 40px; margin-bottom: 24px; align-items: stretch;">
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <h3>Faces detected on original image</h3>
+            <img src="{{ original_image_url }}" alt="Original" style="max-width: 320px;">
+            <p><strong>Resolution:</strong> {{ resolution }}</p>
+            <p><strong>Light Level:</strong> {{ light_level }}%</p>
+            <p>{{ normal_result }}</p>
+            <h4>Matched Images:</h4>
+            <div style="min-height: 110px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%;">
+                {% if normal_matched %}
+                    {% for img_url in normal_matched %}
+                        <img src="{{ img_url }}" style="max-width: 100px; height: auto; margin-bottom: 8px;">
+                    {% endfor %}
+                {% else %}
+                    <span style="color: #aaa; font-style: italic;">No matches found</span>
+                {% endif %}
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+                {% if normal_confusion %}
+                    <h4 style="margin-top: 24px; text-align: center;">Confusion Matrix (Normal Detection)</h4>
+                    <div style="display: flex; justify-content: center;">
+                        <table style="border-collapse: collapse; margin-bottom: 16px; min-width: 320px; width: 340px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; text-align: center;">
+                            <tr>
+                                <th style="border: none;"></th>
+                                <th colspan="2" style="border: 2px solid #000; font-size: 1.1em; padding: 8px;">Actual Face</th>
+                            </tr>
+                            <tr>
+                                <th style="border: none;"></th>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px;">Present</th>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px;">Not Present</th>
+                            </tr>
+                            <tr>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px; writing-mode: vertical-lr; transform: rotate(180deg);">Face Detected</th>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    TP<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ normal_TP }}</span>
+                                    {% if normal_tp_images %}
+                                        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+                                            {% for img_url in normal_tp_images %}
+                                                <img src="{{ img_url }}" style="max-width:40px; max-height:40px; border:1px solid #ccc;">
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    FP<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ normal_FP }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px; writing-mode: vertical-lr; transform: rotate(180deg);">Face Not Detected</th>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    FN<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ normal_FN }}</span>
+                                    {% if normal_missed %}
+                                        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+                                            {% for img_url in normal_missed %}
+                                                <img src="{{ img_url }}" style="max-width:40px; max-height:40px; border:1px solid #ccc;">
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    TN<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ normal_TN }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                {% endif %}
+                <table style="border-collapse: separate; border-spacing: 0; margin-bottom: 16px; min-width: 200px; width: 240px; margin-left: auto; margin-right: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden;">
+                    <tr style="background: #4a90e2; color: #fff;">
+                        <th style="border: none; padding: 12px 8px; font-size: 1.08em;">Metric</th>
+                        <th style="border: none; padding: 12px 8px; font-size: 1.08em;">Count</th>
+                    </tr>
+                    {% for label, row in normal_confusion %}
+                        <tr style="text-align: center; background: {% if loop.index0 % 2 == 0 %}#f7fbff{% else %}#e9f2fb{% endif %};">
+                            <th style="border: none; padding: 10px 8px; font-weight: 600;">{{ label }}</th>
+                            <td style="border: none; padding: 10px 8px;">{{ row[0] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <!-- Detection Metrics for Normal Detection -->
+                <h4 style="margin-top:16px; text-align:center;">Detection Metrics</h4>
+                <table style="border-collapse: collapse; margin-bottom: 24px; min-width: 300px; width: 320px; margin-left: auto; margin-right: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; text-align: center;">
+                    <tr style="background: #4a90e2; color: #fff;">
+                        <th style="padding: 10px 8px;">Metric</th>
+                        <th style="padding: 10px 8px;">Formula & Value</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 8px;">Precision</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">TP / (TP + FP)</span><br>
+                            <strong>{{ '%.2f' % normal_precision }}</strong>
+                        </td>
+                    </tr>
+                    <tr style="background: #f7fbff;">
+                        <td style="padding: 8px 8px;">Recall</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">TP / (TP + FN)</span><br>
+                            <strong>{{ '%.2f' % normal_recall }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 8px;">F1 Score</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">2 × (Precision × Recall) / (Precision + Recall)</span><br>
+                            <strong>{{ '%.2f' % normal_f1 }}</strong>
+                        </td>
+                    </tr>
+                    <tr style="background: #f7fbff;">
+                        <td style="padding: 8px 8px;">Accuracy</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">(TP + TN) / (TP + TN + FP + FN)</span><br>
+                            <strong>{{ '%.2f' % normal_accuracy }}</strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <h3>Faces detected on noisy image</h3>
+            <img src="{{ noisy_image_url }}" alt="Noisy" style="max-width: 320px;">
+            <p><strong>Resolution:</strong> {{ resolution }}</p>
+            <p>{{ noisy_result }}</p>
+            <h4>Matched Images:</h4>
+            <div style="min-height: 110px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 100%;">
+                {% if noisy_matched %}
+                    {% for img_url in noisy_matched %}
+                        <img src="{{ img_url }}" style="max-width: 100px; height: auto; margin-bottom: 8px;">
+                    {% endfor %}
+                {% else %}
+                    <span style="color: #aaa; font-style: italic;">No matches found</span>
+                {% endif %}
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
+                {% if noisy_confusion %}
+                    <h4 style="margin-top: 24px; text-align: center;">Confusion Matrix (Noisy Detection)</h4>
+                    <div style="display: flex; justify-content: center;">
+                        <table style="border-collapse: collapse; margin-bottom: 16px; min-width: 320px; width: 340px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; text-align: center;">
+                            <tr>
+                                <th style="border: none;"></th>
+                                <th colspan="2" style="border: 2px solid #000; font-size: 1.1em; padding: 8px;">Actual Face</th>
+                            </tr>
+                            <tr>
+                                <th style="border: none;"></th>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px;">Present</th>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px;">Not Present</th>
+                            </tr>
+                            <tr>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px; writing-mode: vertical-lr; transform: rotate(180deg);">Face Detected</th>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    TP<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ noisy_TP }}</span>
+                                    {% if noisy_tp_images %}
+                                        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+                                            {% for img_url in noisy_tp_images %}
+                                                <img src="{{ img_url }}" style="max-width:40px; max-height:40px; border:1px solid #ccc;">
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    FP<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ noisy_FP }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th style="border: 2px solid #000; font-size: 1em; padding: 8px; writing-mode: vertical-lr; transform: rotate(180deg);">Face Not Detected</th>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    FN<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ noisy_FN }}</span>
+                                    {% if noisy_missed %}
+                                        <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+                                            {% for img_url in noisy_missed %}
+                                                <img src="{{ img_url }}" style="max-width:40px; max-height:40px; border:1px solid #ccc;">
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td style="border: 2px solid #000; font-size: 1.1em; padding: 16px;">
+                                    TN<br>
+                                    <span style="font-size:1.3em; font-weight:bold;">{{ noisy_TN }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                {% endif %}
+                <table style="border-collapse: separate; border-spacing: 0; margin-bottom: 16px; min-width: 200px; width: 240px; margin-left: auto; margin-right: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden;">
+                    <tr style="background: #4a90e2; color: #fff;">
+                        <th style="border: none; padding: 12px 8px; font-size: 1.08em;">Metric</th>
+                        <th style="border: none; padding: 12px 8px; font-size: 1.08em;">Count</th>
+                    </tr>
+                    {% for label, row in noisy_confusion %}
+                        <tr style="text-align: center; background: {% if loop.index0 % 2 == 0 %}#f7fbff{% else %}#e9f2fb{% endif %};">
+                            <th style="border: none; padding: 10px 8px; font-weight: 600;">{{ label }}</th>
+                            <td style="border: none; padding: 10px 8px;">{{ row[0] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <!-- Detection Metrics for Noisy Detection -->
+                <h4 style="margin-top:16px; text-align:center;">Detection Metrics</h4>
+                <table style="border-collapse: collapse; margin-bottom: 24px; min-width: 300px; width: 320px; margin-left: auto; margin-right: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; text-align: center;">
+                    <tr style="background: #4a90e2; color: #fff;">
+                        <th style="padding: 10px 8px;">Metric</th>
+                        <th style="padding: 10px 8px;">Formula & Value</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 8px;">Precision</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">TP / (TP + FP)</span><br>
+                            <strong>{{ '%.2f' % noisy_precision }}</strong>
+                        </td>
+                    </tr>
+                    <tr style="background: #f7fbff;">
+                        <td style="padding: 8px 8px;">Recall</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">TP / (TP + FN)</span><br>
+                            <strong>{{ '%.2f' % noisy_recall }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 8px;">F1 Score</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">2 × (Precision × Recall) / (Precision + Recall)</span><br>
+                            <strong>{{ '%.2f' % noisy_f1 }}</strong>
+                        </td>
+                    </tr>
+                    <tr style="background: #f7fbff;">
+                        <td style="padding: 8px 8px;">Accuracy</td>
+                        <td style="padding: 8px 8px;">
+                            <span style="font-size:0.95em; color:#555;">(TP + TN) / (TP + TN + FP + FN)</span><br>
+                            <strong>{{ '%.2f' % noisy_accuracy }}</strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+<!-- F1 Score Bar Graph -->
+<h3 style="text-align:center; margin-top:32px;">F1 Score Comparison</h3>
+<div id="f1-score-plot" style="width: 600px; height: 400px; margin: 0 auto;"></div>   
+{% if roc_curve_url_normal %}
+    <div style="text-align:center; margin-top:32px;">
+        <h4>ROC Curve (Normal Detection)</h4>
+        <img src="{{ roc_curve_url_normal }}" alt="ROC Curve Normal" style="max-width:400px; border:1px solid #ccc; border-radius:8px;">
+    </div>
+{% endif %}
+{% if roc_curve_url_noisy %}
+    <div style="text-align:center; margin-top:32px;">
+        <h4>ROC Curve (Noisy Detection)</h4>
+        <img src="{{ roc_curve_url_noisy }}" alt="ROC Curve Noisy" style="max-width:400px; border:1px solid #ccc; border-radius:8px;">
+    </div>
+{% endif %}
+<h3>Live ROC Curve Comparison (Normal vs Noisy)</h3>
+<div id="live-roc-plot" style="width: 600px; height: 400px;"></div>
+
+
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    var normalFpr = {{ normal_roc.fpr | tojson | safe }};
+    var normalTpr = {{ normal_roc.tpr | tojson | safe }};
+    var noisyFpr = {{ noisy_roc.fpr | tojson | safe }};
+    var noisyTpr = {{ noisy_roc.tpr | tojson | safe }};
+
+    var traceNormal = {
+        x: normalFpr,
+        y: normalTpr,
+        mode: 'lines+markers',
+        name: 'Normal',
+        line: {color: 'green'}
+    };
+    var traceNoisy = {
+        x: noisyFpr,
+        y: noisyTpr,
+        mode: 'lines+markers',
+        name: 'Noisy',
+        line: {color: 'red'}
+    };
+
+    var layout = {
+        xaxis: {title: 'False Positive Rate', range: [0, 1]},
+        yaxis: {title: 'True Positive Rate', range: [0, 1]},
+        title: 'Live ROC Curve Comparison',
+        showlegend: true
+    };
+
+    Plotly.newPlot('live-roc-plot', [traceNormal, traceNoisy], layout);
+    
+    // F1 Score Bar Graph
+    var f1Data = [
+        {
+            x: ['Normal', 'Noisy'],
+            y: [{{ normal_f1 }}, {{ noisy_f1 }}],
+            type: 'bar',
+            marker: {
+                color: ['green', 'red']
+            },
+            text: ['{{ "%.2f"|format(normal_f1) }}', '{{ "%.2f"|format(noisy_f1) }}'],
+            textposition: 'auto'
+        }
+    ];
+    
+    var f1Layout = {
+        title: 'F1 Score Comparison',
+        yaxis: {
+            title: 'F1 Score',
+            range: [0, 1]
+        },
+        annotations: [
+            {
+                x: 'Normal',
+                y: {{ normal_f1 }},
+                text: '{{ "%.2f"|format(normal_f1) }}',
+                showarrow: false,
+                yshift: 15
+            },
+            {
+                x: 'Noisy',
+                y: {{ noisy_f1 }},
+                text: '{{ "%.2f"|format(noisy_f1) }}',
+                showarrow: false,
+                yshift: 15
+            }
+        ]
+    };
+    
+    Plotly.newPlot('f1-score-plot', f1Data, f1Layout);
+</script>
+
+<form method="post" action="{{ url_for('reset') }}">
+    <button type="submit" style="background:#888;">Try Another Image</button>
+</form>
+{% endblock %}

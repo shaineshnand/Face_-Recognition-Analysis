@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Detection Dashboard</h2>
+    <div style="margin-bottom: 24px;">
+        <h3>Uploaded Image Preview</h3>
+        <img src="{{ image_url }}" alt="Uploaded Image" style="max-width: 320px; border: 2px solid #4CAF50;">
+    </div>
+    <!-- Resolution selection form -->
+    <form method="post" action="{{ url_for('set_resolution') }}" style="margin-bottom: 18px;">
+        <label for="resolution">Choose resolution:</label>
+        <select name="resolution" id="resolution">
+            <option value="224x224">224x224</option>
+            <option value="160x160">160x160</option>
+            <option value="128x128">128x128</option>
+            <option value="96x96">96x96</option>
+            <option value="48x48">48x48</option>
+            <option value="32x32">32x32</option>
+            <option value="16x16">16x16</option>
+        </select>
+        <button type="submit">Set Resolution</button>
+    </form>
+    <!-- Light level selection form -->
+    <form method="post" action="{{ url_for('set_light_level') }}" style="margin-bottom: 18px;">
+        <label for="light_level">Choose light level:</label>
+        <select name="light_level" id="light_level">
+            <option value="100">100% (Normal)</option>
+            <option value="75">75%</option>
+            <option value="50">50%</option>
+            <option value="25">25%</option>
+            <option value="10">10%</option>
+        </select>
+        <button type="submit">Set Light Level</button>
+    </form>
+    <form method="post" action="{{ url_for('run_normal_detection') }}" style="display:inline;">
+        <button type="submit" {% if normal_status == 'Done' %}disabled{% endif %}>Run Normal Face Detection</button>
+    </form>
+    <form method="post" action="{{ url_for('run_noisy_detection') }}" style="display:inline;">
+        <select name="noise_type" style="padding: 6px 10px; border-radius: 5px; margin-right: 8px;">
+            <option value="Gaussian" {% if noise_type == 'Gaussian' %}selected{% endif %}>Gaussian</option>
+            <option value="Salt & Pepper" {% if noise_type == 'Salt & Pepper' %}selected{% endif %}>Salt & Pepper</option>
+        </select>
+        <button type="submit" {% if noisy_status == 'Done' %}disabled{% endif %}>Run Noisy Detection</button>
+    </form>
+    <div style="margin-top: 24px;">
+        <strong>Status:</strong>
+        <ul>
+            <li>Normal Detection: {{ normal_status }}</li>
+            <li>Noisy Detection: {{ noisy_status }}</li>
+        </ul>
+    </div>
+    {% if compare_ready %}
+        <form method="get" action="{{ url_for('compare') }}">
+            <button type="submit" style="background:#2196F3;">Compare Results</button>
+        </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('reset') }}" style="margin-top: 18px;">
+        <button type="submit" style="background:#888;">Try Another Image</button>
+    </form>
+    {% if resolution_message %}
+      <div class="alert alert-info">{{ resolution_message }}</div>
+    {% endif %}
+    {% if light_level_message %}
+      <div class="alert alert-info">{{ light_level_message }}</div>
+    {% endif %}
+{% endblock %}
