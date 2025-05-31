@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Detection Results</h2>
+    <div style="display: flex; gap: 40px;">
+      <div>
+        <h3>Original Image</h3>
+        {% if original_image_url %}
+          <img src="{{ original_image_url }}" alt="Original" style="max-width: 300px;">
+          <p><strong>Resolution:</strong> {{ resolution }}</p>
+          <p>{{ original_result }}</p>
+          {% if original_matched %}
+            <h4>Matched Images:</h4>
+            {% for img_url in original_matched %}
+              <img src="{{ img_url }}" style="max-width: 100px;">
+            {% endfor %}
+          {% endif %}
+        {% else %}
+          <p>No original image available.</p>
+        {% endif %}
+      </div>
+      <div>
+        <h3>Noisy Image</h3>
+        {% if noisy_image_url %}
+          <img src="{{ noisy_image_url }}" alt="Noisy" style="max-width: 300px;">
+          <p><strong>Resolution:</strong> {{ resolution }}</p>
+          <p>{{ noisy_result }}</p>
+          {% if noisy_matched %}
+            <h4>Matched Images:</h4>
+            {% for img_url in noisy_matched %}
+              <img src="{{ img_url }}" style="max-width: 100px;">
+            {% endfor %}
+          {% endif %}
+        {% else %}
+          <p>No noisy image available.</p>
+        {% endif %}
+      </div>
+    </div>
+    <form method="get" action="{{ url_for('index') }}" style="margin-top: 24px;">
+        <button type="submit">Start Over</button>
+    </form>
+{% endblock %}

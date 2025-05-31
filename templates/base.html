@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f4f4f9 0%, #e0ffe0 100%);
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto 60px auto;
+            padding: 30px 40px 40px 40px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(60, 60, 60, 0.12);
+        }
+        header {
+            background: #4CAF50;
+            color: white;
+            padding: 18px 0 10px 0;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(76,175,80,0.08);
+        }
+        .button, button {
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 22px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 8px 4px;
+            transition: background 0.2s;
+        }
+        .button:hover, button:hover {
+            background: #388e3c;
+        }
+        .alert {
+            background: #ffefc1;
+            color: #7c6f00;
+            border: 1px solid #ffe082;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 18px 0;
+            font-size: 1.1em;
+        }
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+            font-size: 0.95em;
+        }
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        img {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(60,60,60,0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Face Recognition System</h1>
+        </header>
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+       
+    </div>
+    <footer>
+        &copy; {{ 2025 }} Face Recognition System &mdash; <a href="#">Home</a>
+    </footer>
+</body>
+</html>
+{% if message %}
+  <div class="alert">{{ message }}</div>
+{% endif %}
